@@ -1,26 +1,58 @@
 import React from 'react';
-import logo from './logo.svg';
+import {  MapsWrapper } from './styles/styles';
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
+import CurrentLocation from './components/backButton';
+import RandomLocation from './components/randomButton';
 import './App.css';
 
-function App() {
+const App: React.FC = () => {
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: "api goes here"
+  })
+
+  const mapRef = React.useRef<google.maps.Map | null>(null);
+
+  const moveTo = (position: google.maps.LatLngLiteral) => {
+    
+    if (mapRef.current) {
+      mapRef.current.panTo({ lat: position.lat, lng: position.lng });
+      mapRef.current.setZoom(10);
+
+    }
+  }
+
+  const onLoad = (map: google.maps.Map): void => {
+    mapRef.current = map;
+  }
+
+  const unMount = (): void => {
+    mapRef.current = null;
+  }
+
+  if (!isLoaded) {
+    return <div>Loading</div>;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  
+    <MapsWrapper>
+
+      <CurrentLocation moveTo={moveTo} />
+      <RandomLocation moveToRandom={moveTo} />
+      
+      <GoogleMap
+        mapContainerStyle={{ height: '50vh', width: '30%', marginLeft: 650, marginTop: 200 }}
+        center={{lat: 23.23, lng: 67.45}}
+        zoom={12}
+        onLoad={onLoad}
+        onUnmount={unMount}
+      >
+      </GoogleMap>
+
+    </MapsWrapper>  
+  )
 }
+
 
 export default App;
